@@ -755,7 +755,9 @@ prepareMethodLists(Class cls, method_list_t **addedLists, int addedCount,
     }
 }
 
-
+/*Alex注释:
+ * 将category的方法、属性、协议追加到类的  (class_rw_t *) data(){ bits.data() }上
+ */
 // Attach method lists and properties and protocols from categories to a class.
 // Assumes the categories in cats are all loaded and sorted by load order, 
 // oldest categories first.
@@ -836,7 +838,9 @@ static void methodizeClass(Class cls)
         _objc_inform("CLASS: methodizing class '%s' %s", 
                      cls->nameForLogging(), isMeta ? "(meta)" : "");
     }
-
+    /*Alex注释:
+     * 将类自身实现的方法、属性、协议放到类的可读部分
+     */
     // Install methods and properties that the class implements itself.
     method_list_t *list = ro->baseMethods();
     if (list) {
@@ -860,7 +864,9 @@ static void methodizeClass(Class cls)
         // root metaclass
         addMethod(cls, SEL_initialize, (IMP)&objc_noop_imp, "", NO);
     }
-
+    /*Alex注释:
+     * 从全局的 NXMapTable 中取到cls对应的分类列表 category_list
+     */
     // Attach categories.
     category_list *cats = unattachedCategoriesForClass(cls, true /*realizing*/);
     attachCategories(cls, cats, false /*don't flush caches*/);
@@ -1855,6 +1861,13 @@ static void reconcileInstanceVariables(Class cls, Class supercls, const class_ro
 * Returns the real class structure for the class. 
 * Locking: runtimeLock must be write-locked by the caller
 **********************************************************************/
+/*Alex注释:
+ * 实现类
+ * 在类cls上执行首次的初始化
+ * 包括分配其读写数据
+ * 返回类的真实结构
+ * 手动调用运行时锁
+ */
 static Class realizeClass(Class cls)
 {
     runtimeLock.assertLocked();
@@ -2021,7 +2034,10 @@ static void realizeAllClassesInImage(header_info *hi)
     hi->setAllClassesRealized(YES);
 }
 
-
+/*Alex注释:
+ * 装载全部的class类进行初始化
+ *
+ */
 /***********************************************************************
 * realizeAllClasses
 * Non-lazily realizes all unrealized classes in all known images.
@@ -2162,7 +2178,10 @@ map_images(unsigned count, const char * const paths[],
     return map_images_nolock(count, paths, mhdrs);
 }
 
-
+/*Alex注释:
+ * 动态加载+load方法
+ *
+ */
 /***********************************************************************
 * load_images
 * Process +load in the given images which are being mapped in by dyld.
@@ -2183,9 +2202,15 @@ load_images(const char *path __unused, const struct mach_header *mh)
     // Discover load methods
     {
         mutex_locker_t lock2(runtimeLock);
+        /*Alex注释:
+         * 装载+load方法
+         */
         prepare_load_methods((const headerType *)mh);
     }
-
+    /*Alex注释:
+     * 调用+load方法
+     *
+     */
     // Call +load methods (without runtimeLock - re-entrant)
     call_load_methods();
 }
@@ -2863,15 +2888,23 @@ bool hasLoadMethods(const headerType *mhdr)
     return false;
 }
 
+/*Alex注释:
+ * 关于类和category调用顺序、在这里是先加载的类的+load方法、之后装载的category的+load方法
+ * class的+load方法保存在全局的loadable_classes结构体数组中、
+ * category的+load方法保存在全局的loadable_categories结构体数组中
+ */
 void prepare_load_methods(const headerType *mhdr)
 {
     size_t count, i;
 
     runtimeLock.assertLocked();
 
-    classref_t *classlist = 
+    classref_t *classlist =
         _getObjc2NonlazyClassList(mhdr, &count);
     for (i = 0; i < count; i++) {
+        /*Alex注释:
+         * 加载类的 + load方法，并将类的load方法和类存储到 loadable_classes 结构体数组中
+         */
         schedule_class_load(remapClass(classlist[i]));
     }
 
@@ -2882,6 +2915,9 @@ void prepare_load_methods(const headerType *mhdr)
         if (!cls) continue;  // category for ignored weak-linked class
         realizeClass(cls);
         assert(cls->ISA()->isRealized());
+        /*Alex注释:
+         * 加载category的 + load方法， 并将category的load方法和category存储到 loadable_categories 结构体数组中
+         */
         add_category_to_loadable_list(cat);
     }
 }
@@ -5027,7 +5063,9 @@ IMP lookupMethodInClassAndLoadCache(Class cls, SEL sel)
     }
 }
 
-
+/*Alex注释:
+ * 此处可以看出苹果获取类的property属性是通过遍历（class_rw_t *） cls->data() 中的properties list比对name来查找的
+ */
 /***********************************************************************
 * class_getProperty
 * fixme

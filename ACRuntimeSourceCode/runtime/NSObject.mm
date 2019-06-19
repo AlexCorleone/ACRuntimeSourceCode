@@ -171,8 +171,13 @@ alignas(StripedMap<SideTable>) static uint8_t
 static void SideTableInit() {
     new (SideTableBuf) StripedMap<SideTable>();
 }
-
+/*Alex注释:
+    这里 SideTables()全局保存对象和 SideTable之间的映射,对象地址的hash是StripedMap中array的index。
+ */
 static StripedMap<SideTable>& SideTables() {
+    /*Alex注释:
+        reinterpret_cast是C++中与C风格类型转换最接近的类型转换运算符。它让程序员能够将一种对象类型转换为另一种，不管它们是否相关。
+     */
     return *reinterpret_cast<StripedMap<SideTable>*>(SideTableBuf);
 }
 

@@ -57,11 +57,19 @@ namespace {
 };
 
 #include "isa.h"
-
+/*Alex注释:
+ * 共用体类型共享同一片内存、
+ * 此处isa在64位处理器下是8个字节、64位、
+ * 在32位处理器下是4个字节、32位、
+ * 对于每一位标识的作用在struct的 ISA_BITFIELD 宏定义内标识。
+ */
 union isa_t {
     isa_t() { }
     isa_t(uintptr_t value) : bits(value) { }
-    
+    /*Alex注释:
+     * 结构体指针(Class)在64位下是8个字节、32位下是4个字节
+     * unsigned long (uintptr_t) 在64位下是8个自己、32位下是4个字节
+     */
     Class cls;
     uintptr_t bits;
 #if defined(ISA_BITFIELD)
@@ -950,6 +958,33 @@ public:
 
 // Based on principles from http://locklessinc.com/articles/fast_hash/
 // and evaluation ideas from http://floodyberry.com/noncryptohashzoo/
+/*Alex注释:苹果hash的实现
+ /*
+         (lldb) p (uint64_t)bootPageVC
+         (uint64_t) $13 = 5333113664
+         (lldb) po $13
+         <BootPageViewController: 0x13de0db40>
+          (lldb) p $13 >> 4
+         (uint64_t) $15 = 333319604
+         (lldb) p $15 ^ $13
+         (unsigned long long) $16 = 5070837492
+         (lldb) p $16 * 9986463786700102229
+         (unsigned long long) $17 = 1551478529176446724
+         (lldb) p __builtin_bswap64($17)
+         (unsigned long long) $18 = 299266794998564629
+         (lldb) po $17 ^ $18
+         1270226270151548945
+    //
+ 
+ 0x8a970be7488fda55 = 10001010 10010111 00001011 11100111 01001000 10001111 11011010 01010101
+ 
+ *   key = 100111101111000001101101101000000 (13de0db40)
+ *   key >> 4 = 10011110111100000110110110100 (333319604)
+ *   key = key ^ (key >> 4) = 100101110001111101101011011110100 (5070837492)
+ *   key = key * 0x8a970be7488fda55 = 0000 10101 10000111 11110101 10000000 10010000 00110101 00100111 00000100 (1551478529176446724)
+ *   __builtin_bswap64(key) = 00000 100 00100111 00110101 10010000 10000000 11110101 10000111 00010101 (299266794998564629)
+ *   key = key ^ __builtin_bswap64(key) = 1000110100000110000000001000000010000110000001010000000010001 (1270226270151548945)
+ */
 #if __LP64__
 static inline uint32_t ptr_hash(uint64_t key)
 {

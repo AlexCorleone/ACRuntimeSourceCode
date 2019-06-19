@@ -305,6 +305,9 @@ static void weak_entry_remove(weak_table_t *weak_table, weak_entry_t *entry)
  * 
  * @return The table of weak referrers to this object. 
  */
+/*Alex注释:
+    根据对象地址取weak_entries中的entry对象
+ */
 static weak_entry_t *
 weak_entry_for_referent(weak_table_t *weak_table, objc_object *referent)
 {
@@ -322,6 +325,7 @@ weak_entry_for_referent(weak_table_t *weak_table, objc_object *referent)
         if (index == begin) bad_weak_table(weak_table->weak_entries);
         hash_displacement++;
         if (hash_displacement > weak_table->max_hash_displacement) {
+            /*Alex注释如果hash的移位大于最大的可移位、则返回nil、外部对hash进行扩容*/
             return nil;
         }
     }

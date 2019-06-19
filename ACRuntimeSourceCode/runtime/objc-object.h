@@ -223,7 +223,7 @@ inline void
 objc_object::initIsa(Class cls, bool nonpointer, bool hasCxxDtor)
 { 
     assert(!isTaggedPointer()); 
-    //Alex注释、这里如果是指针类型则isa.cls == class
+    //Alex注释、这里如果是指针类型则isa.cls == class、isa存储的是类的地址
     if (!nonpointer) {
         isa.cls = cls;
     } else {

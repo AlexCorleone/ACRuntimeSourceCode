@@ -724,10 +724,19 @@ class list_array_tt {
             // many lists -> many lists
             uint32_t oldCount = array()->count;
             uint32_t newCount = oldCount + addedCount;
+            /*Alex注释: 重新为array(分配内存)
+               *大小为newCount
+               */
             setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));
             array()->count = newCount;
-            memmove(array()->lists + addedCount, array()->lists, 
+            /*Alex注释:
+               *将原来的旧lists数据移动到addedCount标记之后，前面留出addedCount的标记位给分类数据使用。
+               */
+            memmove(array()->lists + addedCount, array()->lists,
                     oldCount * sizeof(array()->lists[0]));
+            /*Alex注释:
+               *将addedLists的数据copy到array()->lists中，从Lists标记位为0的开始
+               */
             memcpy(array()->lists, addedLists, 
                    addedCount * sizeof(array()->lists[0]));
         }
@@ -829,7 +838,10 @@ struct class_rw_t {
     uint32_t version;
 
     const class_ro_t *ro;
-
+    /*Alex注释:
+     *method_array_t, property_array_t, protocol_array_t 继承自 list_array_tt类；所以他们分别具有了 attachLists行为、进行list附加操作
+     *
+     */
     method_array_t methods;
     property_array_t properties;
     protocol_array_t protocols;

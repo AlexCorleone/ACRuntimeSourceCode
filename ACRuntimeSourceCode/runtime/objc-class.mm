@@ -332,7 +332,10 @@ _class_getIvarMemoryManagement(Class cls, Ivar ivar)
 }
 
 
-static ALWAYS_INLINE 
+/*Alex注释:
+    这里设置对象的成员变量值,根据不同的引用计数修饰调用不同的存值方法
+ */
+static ALWAYS_INLINE
 void _object_setIvar(id obj, Ivar ivar, id value, bool assumeStrong)
 {
     if (!obj  ||  !ivar  ||  obj->isTaggedPointer()) return;

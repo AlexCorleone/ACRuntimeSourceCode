@@ -56,7 +56,10 @@ static uintptr_t __objc_clsrefsEnd = 0;
 
 static void *__hinfo = NULL;  // cookie from runtime
 extern IMAGE_DOS_HEADER __ImageBase;  // this image's header
-
+/*Alex注释:
+ *
+ *
+ */
 static int __objc_init(void)
 {
     objc_sections sections = {

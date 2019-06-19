@@ -361,7 +361,13 @@ void *NXMapInsert(NXMapTable *table, const void *key, const void *value) {
 static int mapRemove = 0;
 
 void *NXMapRemove(NXMapTable *table, const void *key) {
+    /*Alex注释:
+     * 获取table的hash表数据
+     */
     MapPair	*pairs = (MapPair *)table->buckets;
+    /*Alex注释:
+     * 获取key对应的hash值
+     */
     unsigned	index = bucketOf(table, key);
     MapPair	*pair = pairs + index;
     unsigned	chain = 1; /* number of non-nil pairs in a row */
@@ -375,6 +381,9 @@ void *NXMapRemove(NXMapTable *table, const void *key) {
 	if (isEqual(table, pair->key, key)) {found ++; old = pair->value; }
 	while ((index2 = nextIndex(table, index2)) != index) {
 	    pair = pairs + index2;
+        /*Alex注释:
+         * 当pair->key == NULL时结束循环，此时开放寻址法可能的赋值范围结束，chain为key可能存储key的hash值的区间。
+         */
 	    if (pair->key == NX_MAPNOTAKEY) break;
 	    if (isEqual(table, pair->key, key)) {found ++; old = pair->value; }
 	    chain++;
@@ -391,12 +400,18 @@ void *NXMapRemove(NXMapTable *table, const void *key) {
 	unsigned	index2 = index;
 	while (nb--) {
 	    pair = pairs + index2;
+        /*Alex注释:
+         * 将chain 区间内的值复制到新开辟的空间aux内，并将table中的key、 value置为NULL、
+         */
 	    if (! isEqual(table, pair->key, key)) aux[auxnb++] = *pair;
 	    pair->key = NX_MAPNOTAKEY; pair->value = NULL;
 	    index2 = nextIndex(table, index2);
 	}
 	table->count -= chain;
 	if (auxnb != chain-1) _objc_inform("**** NXMapRemove: bug\n");
+        /*Alex注释:
+         * 对aux存储的临时table数据进行重新插入、
+         */
 	while (auxnb--) NXMapInsert(table, aux[auxnb].key, aux[auxnb].value);
 	if (chain > 16) free(aux);
     }

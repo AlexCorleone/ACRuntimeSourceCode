@@ -116,6 +116,12 @@ struct weak_entry_t {
  * The global weak references table. Stores object ids as keys,
  * and weak_entry_t structs as their values.
  */
+/*Alex注释:
+    weak_entries 存放weak_entry_t结构体对象的数组指针
+    num_entries  当前entries的数量
+    mask 最大可存储 entry的数量
+    max_hash_displacement 最大的hash偏移位数,
+ */
 struct weak_table_t {
     weak_entry_t *weak_entries;
     size_t    num_entries;
