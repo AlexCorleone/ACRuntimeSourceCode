@@ -273,6 +273,8 @@ void _object_set_associative_reference(id object, void *key, id value, uintptr_t
     ObjcAssociation old_association(0, nil);
     id new_value = value ? acquireValue(value, policy) : nil;
     {
+        /*Alex注释: associations
+         */
         AssociationsManager manager;
         AssociationsHashMap &associations(manager.associations());
         disguised_ptr_t disguised_object = DISGUISE(object);

@@ -133,7 +133,9 @@ static SEL search_builtins(const char *name)
     return nil;
 }
 
-
+/*Alex注释:
+ * 将 方法标记 name 保存到 namedSelectors(NXMapTable表)中
+ */
 static SEL __sel_registerName(const char *name, bool shouldLock, bool copy) 
 {
     SEL result = 0;

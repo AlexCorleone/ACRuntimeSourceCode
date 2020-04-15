@@ -43,6 +43,10 @@
 #pragma mark - Alex ( SUPPORT_PACKED_ISA == 1)
 #if SUPPORT_PACKED_ISA
 /*Alex注释:
+    * MSB Most Significant Bit 最高有效位  LSB Least Significant Bit 最低有效位
+    * extra_rc 最低有效位
+    * nonpointer 最高有效位
+    * shiftcls 类指针存储位
     代码有效
  */
     // extra_rc must be the MSB-most field (so it matches carry/overflow flags)

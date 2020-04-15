@@ -1413,7 +1413,8 @@ objc_object::sidetable_getExtraRC_nolock()
 // SUPPORT_NONPOINTER_ISA
 #endif
 
-
+/*Alex注释: retain实现
+ */
 id
 objc_object::sidetable_retain()
 {

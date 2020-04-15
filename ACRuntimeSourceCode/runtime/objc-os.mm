@@ -225,7 +225,9 @@ static header_info * addHeader(const headerType *mhdr, const char *path, int &to
     if (bad_magic(mhdr)) return NULL;
 
     bool inSharedCache = false;
-
+    /*Alex注释:
+     * 从共享缓存中加载 header_info 结构体对象
+     */
     // Look for hinfo from the dyld shared cache.
     hi = preoptimizedHinfoForHeader(mhdr);
     if (hi) {
@@ -259,7 +261,9 @@ static header_info * addHeader(const headerType *mhdr, const char *path, int &to
     else 
     {
         // Didn't find an hinfo in the dyld shared cache.
-
+        /*Alex注释:
+         * 查看 FirstHeader 加载链表中是否有 header_info 结构体对象、如果未找到、创建新的 header_info 结构体对象，并将其追加到 FirstHeader 链表末端
+         */
         // Weed out duplicates
         for (hi = FirstHeader; hi; hi = hi->getNext()) {
             if (mhdr == hi->mhdr()) return NULL;
@@ -467,7 +471,9 @@ map_images_nolock(unsigned mhCount, const char * const mhPaths[],
         uint32_t i = mhCount;
         while (i--) {
             const headerType *mhdr = (const headerType *)mhdrs[i];
-
+            /*Alex注释:
+             * 将mhdr 添加到 FirstHeader 链表中；如果添加成功，addHeader 返回 header_info 结构体
+             */
             auto hi = addHeader(mhdr, mhPaths[i], totalClasses, unoptimizedTotalClasses);
             if (!hi) {
                 // no objc data in this entry
@@ -518,7 +524,13 @@ map_images_nolock(unsigned mhCount, const char * const mhPaths[],
     // executable does not contain Objective-C code but Objective-C 
     // is dynamically loaded later.
     if (firstTime) {
+        /*Alex注释:
+         * 初始化方法mapTable，并注册必须的方法如 load、initialize、retain、release、autorelease、retainCount
+         */
         sel_init(selrefCount);
+        /*Alex注释:
+         * 初始化AutoreleasePool、全局StripedMap<SideTable>
+         */
         arr_init();
 
 #if SUPPORT_GC_COMPAT
@@ -574,6 +586,9 @@ map_images_nolock(unsigned mhCount, const char * const mhPaths[],
     }
 
     if (hCount > 0) {
+        /*Alex注释:
+         * 处理header_info列表数据
+         */
         _read_images(hList, hCount, totalClasses, unoptimizedTotalClasses);
     }
 
@@ -872,6 +887,9 @@ void _objc_atfork_child()
 * Called by libSystem BEFORE library initialization time
 **********************************************************************/
 
+/*Alex注释:
+ * runtime初始化入口
+ **/
 void _objc_init(void)
 {
     static bool initialized = false;
@@ -884,7 +902,10 @@ void _objc_init(void)
     static_init();
     lock_init();
     exception_init();
-
+    /*Alex注释:
+     * 动态链接库 博客 https://www.jianshu.com/p/71c38b56c61a
+     * 动态链接库 源码 https://github.com/opensource-apple/dyld
+     **/
     _dyld_objc_notify_register(&map_images, load_images, unmap_image);
 }
 

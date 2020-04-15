@@ -101,6 +101,9 @@ instrumentObjcMessageSends(BOOL flag)
     OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
 
 // Initializer called by libSystem
+/*Alex注释:
+ * runtime初始化入口
+ **/
 OBJC_EXPORT void
 _objc_init(void)
 #if __OBJC2__

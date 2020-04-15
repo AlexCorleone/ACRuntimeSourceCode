@@ -2487,7 +2487,10 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
     hIndex = 0;         \
     hIndex < hCount && (hi = hList[hIndex]); \
     hIndex++
-
+    /*Alex注释：
+     * 首次加载初始化
+     *
+     */
     if (!doneOnce) {
         doneOnce = YES;
 
@@ -2556,9 +2559,13 @@ void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int un
         // 4/3 is NXMapTable's load factor
         int namedClassesSize = 
             (isPreoptimized() ? unoptimizedTotalClasses : totalClasses) * 4 / 3;
+        /*Alex注释：
+         * gdb_objc_realized_classes 保存不在动态共享缓存(dyld shared cache)中的 命名类  -> hash表
+         * allocatedClasses 缓存已经objc_allocateClassPair方法初始化的类和元类  -> hash表
+         *
+         */
         gdb_objc_realized_classes =
             NXCreateMapTable(NXStrValueMapPrototype, namedClassesSize);
-        
         allocatedClasses = NXCreateHashTable(NXPtrPrototype, 0, nil);
         
         ts.log("IMAGE TIMES: first time tasks");

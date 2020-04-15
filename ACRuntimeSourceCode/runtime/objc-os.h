@@ -180,6 +180,9 @@ static ALWAYS_INLINE
 void 
 ClearExclusive(uintptr_t *dst)
 {
+    /*Alex注释:
+     * asm 不是函数而是汇编指令块
+     */
     // pretend it writes to *dst for instruction ordering purposes
     asm("clrex" : "=m" (*dst));
 }
